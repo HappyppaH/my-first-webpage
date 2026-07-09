@@ -7,21 +7,74 @@
     </head>
     <body>
         <div class="container">
-        <h1>我是高兴</h1>
-        <p>我正在学习编程</p>
-        <img src="images/1.png" alt="我的照片">
-        <button id="byBtn">点击一下</button>
-        <p id="output"></p>
+        <h1>我的待办事项</h1>
+        <div class="input-area">
+            <input type="text" id="todoInput" placeholder="输入要做的事...">
+            <button id="addBtn">添加</button>
+        </div>
+        <ul id="todoList"></ul>
         </div>
         <script>
-            let button = document.getElementById("byBtn");
-            let output = document.getElementById("output");
-            let count = 0;
-            function handleClick(){
-                count = count +1;
-                output.textContent = "你点击了"+count+"次！";
+            const todoInput =document.getElementById('todoInput');
+            const addBtn =document.getElementById('addBtn');
+            const todoList =document.getElementById('todoList');
+            let todos = [];
+            function loadTodos(){
+                const stored =localStorage.getItem('myTodos');
+                if(stored){
+                    todos =JSON.parse(stored);
+                }
+                render();
             }
-            button.addEventListener("click",handleClick);
+            function saveTodos(){
+                localStorage.setItem('myTodos',JSON.stringify(todos));
+            }
+            function render(){
+                todoList.innerHTML = '';
+                todos.forEach((todo,index)=>{
+                    const li =document.createElement("li");
+                    if(todo.completed){
+                        li.classList.add('completed');
+                    }
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = todo.completed;
+                    checkbox.addEventListener('change',()=>{
+                        todo.completed = checkbox.checked;
+                        saveTodos();
+                        render();
+                    })
+                    const span = document.createElement('span');
+                    span.textContent = todo.text;
+                    const delBtn = document.createElement('button');
+                    delBtn.textContent ='删除';
+                    delBtn.style.marginLeft = 'auto';
+                    delBtn.addEventListener('click',()=>{
+                        todos.splice(index,1);
+                        saveTodos();
+                        render();
+                    });
+                    li.appendChild(checkbox);
+                    li.appendChild(span);
+                    li.appendChild(delBtn);
+                    todoList.appendChild(li);
+                } );
+            }
+            function addTodo(){
+                const text = todoInput.value.trim();
+                if (text==='' )return;
+                todos.push({text,completed:false});
+                todoInput.value='';
+                saveTodos();
+                render();
+            }
+            addBtn.addEventListener('click',addTodo);
+            todoInput.addEventListener('keypress',(e)=>{
+                if(e.key==='Enter'){
+                    addTodo();
+                }
+            });
+            loadTodos();
         </script>
     </body>
 </html>
