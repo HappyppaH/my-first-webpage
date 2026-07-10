@@ -1,80 +1,41 @@
 <html lang="zh-CN">
     <head>
-        <link rel="stylesheet" href="style.css">
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>我的个人主页</title>
+       <meta charset="UTF-8">
+       <title>彩色方块练习</title>
+       <style>
+        body{text-align: center;padding-top: 40px;}
+        #boxContainer{display: flex;flex-wrap: wrap;gap: 12px;margin-top: 20px;padding: 0 40px;}
+        .colorBox{
+            width: 80px;height: 80px;border-radius: 8px;
+            cursor: pointer;transition: transform 0.1s;
+        }
+        .colorBox:hover{transform: scale(1.05);}
+       </style>
     </head>
     <body>
-        <div class="container">
-        <h1>我的待办事项</h1>
-        <div class="input-area">
-            <input type="text" id="todoInput" placeholder="输入要做的事...">
-            <button id="addBtn">添加</button>
-        </div>
-        <ul id="todoList"></ul>
-        </div>
+        <h2>点击按钮生成彩色方块，点击方块删除</h2>
+        <button id="addBoxBtn">生成一个方块</button>
+        <div id="boxContainer"></div>
         <script>
-            const todoInput =document.getElementById('todoInput');
-            const addBtn =document.getElementById('addBtn');
-            const todoList =document.getElementById('todoList');
-            let todos = [];
-            function loadTodos(){
-                const stored =localStorage.getItem('myTodos');
-                if(stored){
-                    todos =JSON.parse(stored);
-                }
-                render();
-            }
-            function saveTodos(){
-                localStorage.setItem('myTodos',JSON.stringify(todos));
-            }
-            function render(){
-                todoList.innerHTML = '';
-                todos.forEach((todo,index)=>{
-                    const li =document.createElement("li");
-                    if(todo.completed){
-                        li.classList.add('completed');
-                    }
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.checked = todo.completed;
-                    checkbox.addEventListener('change',()=>{
-                        todo.completed = checkbox.checked;
-                        saveTodos();
-                        render();
-                    })
-                    const span = document.createElement('span');
-                    span.textContent = todo.text;
-                    const delBtn = document.createElement('button');
-                    delBtn.textContent ='删除';
-                    delBtn.style.marginLeft = 'auto';
-                    delBtn.addEventListener('click',()=>{
-                        todos.splice(index,1);
-                        saveTodos();
-                        render();
-                    });
-                    li.appendChild(checkbox);
-                    li.appendChild(span);
-                    li.appendChild(delBtn);
-                    todoList.appendChild(li);
-                } );
-            }
-            function addTodo(){
-                const text = todoInput.value.trim();
-                if (text==='' )return;
-                todos.push({text,completed:false});
-                todoInput.value='';
-                saveTodos();
-                render();
-            }
-            addBtn.addEventListener('click',addTodo);
-            todoInput.addEventListener('keypress',(e)=>{
-                if(e.key==='Enter'){
-                    addTodo();
-                }
-            });
-            loadTodos();
+        const addBtn=document.getElementById('addBoxBtn');
+        const container=document.getElementById('boxContainer');
+        function randomColor(){
+            const r =Math.floor(Math.random()*256);
+            const g =Math.floor(Math.random()*256);
+            const b =Math.floor(Math.random()*256);
+            return `rgb(${r},${g},${b})`;
+        }     
+        function createBox(){
+            const box = document.createElement('div');
+            box.classList.add('colorBox');
+            box.style.backgroundColor = randomColor();
+            box
+            .addEventListener('click',function(){
+                box.remove();
+            })
+            container.appendChild(box);
+        }
+        addBtn.addEventListener('click',createBox);
         </script>
     </body>
 </html>
