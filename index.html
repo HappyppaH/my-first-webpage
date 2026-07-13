@@ -20,11 +20,22 @@
             const todoList =document.getElementById('todoList');
             let todos = [];
             function loadTodos(){
-                const stored =localStorage.getItem('myTodos');
-                if(stored){
-                    todos =JSON.parse(stored);
-                }
-                render();
+                fetch('http://localhost:3000/api/todos')
+                .then(response=>response.json())
+                .then(data=>{
+                    todos=data;
+                    render();
+                    saveTodos();
+                })
+                .catch(error=>{
+                    console.error('获取数据失败，使用本地数据:',error);
+                    const stored = localStorage.getItem('mytodos');
+                    if(stored){
+                        todos=JSON.parse(stored);
+                    }
+                    render();
+                });
+                
             }
             function saveTodos(){
                 localStorage.setItem('myTodos',JSON.stringify(todos));
