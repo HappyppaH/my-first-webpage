@@ -61,7 +61,19 @@
                     delBtn.textContent ='删除';
                     delBtn.style.marginLeft = 'auto';
                     delBtn.addEventListener('click',()=>{
-                        todos.splice(index,1);
+                        const todoId=todo.id;
+                        fetch(`http://localhost:3000/api/todos/${todoId}`,{
+                            method:'DELETE'
+                        })
+                        .then(re=>res.json())
+                        .then(()=>{
+                            todos.splice(index,1);
+                            saveTodos();
+                            render();
+                        })
+                        .catch(err=>{
+                            console.error('删除失败，仍在本地删除',err);
+                        todos.splice(index,1);                       })
                         saveTodos();
                         render();
                     });
@@ -74,10 +86,31 @@
             function addTodo(){
                 const text = todoInput.value.trim();
                 if (text==='' )return;
-                todos.push({text,completed:false});
-                todoInput.value='';
-                saveTodos();
-                render();
+                const newTodo = {
+                    text:text,
+                    completed:false,
+                    id:Date.now()
+                };
+                fetch('http://localhost:3000/api/todos',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify(newTodo)
+                })
+                .then(re=>res.json())
+                .then(data=>{
+                    newTodo.id=data.id;
+                    todos.push(newTodo);
+                    todoInput.value='';
+                    saveTodos();
+                    render();
+                })
+                .catch(err=>{
+                    console.error('添加失败，仍保存到本地',err);
+                    todos.push(newTodo);
+                    todoInput.value='';
+                    saveTodos();
+                    render();
+                });
             }
             addBtn.addEventListener('click',addTodo);
             todoInput.addEventListener('keypress',(e)=>{
