@@ -8,6 +8,7 @@
     <body>
         <div class="container">
         <h1>我的待办事项</h1>
+        <button id="clearCompletedBtn">清空所选</button>
         <div class="input-area">
             <input type="text" id="todoInput" placeholder="输入要做的事...">
             <button id="addBtn">添加</button>
@@ -15,10 +16,32 @@
         <ul id="todoList"></ul>
         </div>
         <script>
+            const clearCompletedBtn = document.getElementById('clearCompletedBtn');
             const todoInput =document.getElementById('todoInput');
             const addBtn =document.getElementById('addBtn');
             const todoList =document.getElementById('todoList');
             let todos = [];
+            function clearCompleted(){
+                const completedIds = todos.filter(t=>t.completed).map(t=>t.id);
+                if(completedIds.length===0){
+                    alert('没有已完成事项');              
+                return;}
+                Promise.all(completedIds.map(id=>
+                    fetch(`http://localhost:3000/api/todos/${id}`,{method:'DELETE'})
+                ))
+                .then(()=>{
+                    todos=todos.filter(t=>!t.completed);
+                    saveTodos();
+                    render();
+                })
+                .catch(err=>{
+                    console.error('批量删除失败',err);
+                    todos=todos.filter(t=>!t.completed);
+                    saveTodos();    
+                    render();
+                });
+            }
+            clearCompletedBtn.addEventListener('click',clearCompleted);
             function loadTodos(){
                 fetch('http://localhost:3000/api/todos')
                 .then(response=>response.json())
@@ -29,7 +52,7 @@
                 })
                 .catch(error=>{
                     console.error('获取数据失败，使用本地数据:',error);
-                    const stored = localStorage.getItem('mytodos');
+                    const stored = localStorage.getItem('myTodos');
                     if(stored){
                         todos=JSON.parse(stored);
                     }
@@ -51,32 +74,52 @@
                     checkbox.type = 'checkbox';
                     checkbox.checked = todo.completed;
                     checkbox.addEventListener('change',()=>{
-                        todo.completed = checkbox.checked;
+                       const updatedTodo ={...todo,completed:checkbox.checked};
+                       fetch(`http://localhost:3000/api/todos/${todo.id}`,{
+                        method:'PATCH',
+                        headers:{'Content-Type':'application/json'},
+                        body:JSON.stringify({completed:checkbox.checked})
+                       })
+                       .then(res=>res.json())
+                       .then(data=>{
+                        const index=todos.findIndex(t=>t.id===data.id);
+                        if(index!==-1){
+                            todos[index]=data;
+                        }
                         saveTodos();
                         render();
-                    })
+                       })
+                       .catch(err=>{
+                        console.error('更新状态失败，仍更新本地',err);
+                        todo.completed=checkbox.checked;
+                        saveTodos();
+                        render();
+                       });
+                    });
                     const span = document.createElement('span');
                     span.textContent = todo.text;
                     const delBtn = document.createElement('button');
                     delBtn.textContent ='删除';
                     delBtn.style.marginLeft = 'auto';
-                    delBtn.addEventListener('click',()=>{
-                        const todoId=todo.id;
-                        fetch(`http://localhost:3000/api/todos/${todoId}`,{
-                            method:'DELETE'
-                        })
-                        .then(re=>res.json())
-                        .then(()=>{
-                            todos.splice(index,1);
-                            saveTodos();
-                            render();
-                        })
-                        .catch(err=>{
-                            console.error('删除失败，仍在本地删除',err);
-                        todos.splice(index,1);                       })
+                    delBtn.addEventListener('click', () => {
+                        const todoId = todo.id;
+                        fetch(`http://localhost:3000/api/todos/${todoId}`, {
+                        method: 'DELETE'
+                    })
+
+                    .then(res => res.json())
+                     .then(() => {
+                        todos.splice(index, 1);
+                    })
+                    .catch(err => {
+                        console.error('删除失败，仍在本地删除', err);
+                        todos.splice(index, 1);
+                    })
+                    .finally(() => {
                         saveTodos();
                         render();
                     });
+                });
                     li.appendChild(checkbox);
                     li.appendChild(span);
                     li.appendChild(delBtn);
@@ -96,7 +139,7 @@
                     headers:{'Content-Type':'application/json'},
                     body:JSON.stringify(newTodo)
                 })
-                .then(re=>res.json())
+                .then(res=>res.json())
                 .then(data=>{
                     newTodo.id=data.id;
                     todos.push(newTodo);
