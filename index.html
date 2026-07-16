@@ -27,7 +27,7 @@
                     alert('没有已完成事项');              
                 return;}
                 Promise.all(completedIds.map(id=>
-                    fetch(`http://localhost:3000/api/todos/${id}`,{method:'DELETE'})
+                    fetch(` /api/todos/${id}`,{method:'DELETE'})
                 ))
                 .then(()=>{
                     todos=todos.filter(t=>!t.completed);
@@ -43,7 +43,7 @@
             }
             clearCompletedBtn.addEventListener('click',clearCompleted);
             function loadTodos(){
-                fetch('http://localhost:3000/api/todos')
+                fetch(' /api/todos')
                 .then(response=>response.json())
                 .then(data=>{
                     todos=data;
@@ -75,7 +75,7 @@
                     checkbox.checked = todo.completed;
                     checkbox.addEventListener('change',()=>{
                        const updatedTodo ={...todo,completed:checkbox.checked};
-                       fetch(`http://localhost:3000/api/todos/${todo.id}`,{
+                       fetch(` /api/todos/${todo.id}`,{
                         method:'PATCH',
                         headers:{'Content-Type':'application/json'},
                         body:JSON.stringify({completed:checkbox.checked})
@@ -103,7 +103,7 @@
                     delBtn.style.marginLeft = 'auto';
                     delBtn.addEventListener('click', () => {
                         const todoId = todo.id;
-                        fetch(`http://localhost:3000/api/todos/${todoId}`, {
+                        fetch(` /api/todos/${todoId}`, {
                         method: 'DELETE'
                     })
 
@@ -134,7 +134,7 @@
                     completed:false,
                     id:Date.now()
                 };
-                fetch('http://localhost:3000/api/todos',{
+                fetch(' /api/todos',{
                     method:'POST',
                     headers:{'Content-Type':'application/json'},
                     body:JSON.stringify(newTodo)

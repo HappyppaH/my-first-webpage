@@ -8,11 +8,7 @@
     ],
     "routes": [
         {
-            "src": "/api/todos(.*)",
-            "dest": "/api/todos"
-        },
-        {
-            "src": "/api/todos",
+            "src": "/api/todos/(.*)",
             "dest": "/api/todos"
         }
     ]
