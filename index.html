@@ -75,7 +75,7 @@
                     checkbox.checked = todo.completed;
                     checkbox.addEventListener('change',()=>{
                        const updatedTodo ={...todo,completed:checkbox.checked};
-                       fetch(`/api /todos/${todo.id}`,{
+                       fetch(`/api/todos/${todo.id}`,{
                         method:'PATCH',
                         headers:{'Content-Type':'application/json'},
                         body:JSON.stringify({completed:checkbox.checked})
